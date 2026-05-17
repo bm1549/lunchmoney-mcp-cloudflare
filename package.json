@@ -1,0 +1,24 @@
+{
+    "name": "lunchmoney-mcp-cloudflare",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "description": "Cloudflare Worker that exposes the LunchMoney MCP server (akutishevsky/lunchmoney-mcp) as a remote MCP endpoint with Google OAuth.",
+    "scripts": {
+        "dev": "wrangler dev",
+        "deploy": "wrangler deploy",
+        "typecheck": "tsc --noEmit",
+        "cf-typegen": "wrangler types"
+    },
+    "dependencies": {
+        "@akutishevsky/lunchmoney-mcp": "git+https://github.com/bm1549/lunchmoney-mcp.git#template-deploy",
+        "@modelcontextprotocol/sdk": "^1.0.0",
+        "agents": "^0.12.3",
+        "remote-mcp-cloudflare": "git+https://github.com/bm1549/remote-mcp-cloudflare.git"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "^4.20250404.0",
+        "typescript": "^5.4.0",
+        "wrangler": "^4.87.0"
+    }
+}

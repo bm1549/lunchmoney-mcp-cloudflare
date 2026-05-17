@@ -1,0 +1,18 @@
+# Local development secrets. Copy to .dev.vars (gitignored) before running `wrangler dev`.
+# In production, set each of these with `wrangler secret put <NAME>` instead.
+
+# LunchMoney API token (https://my.lunchmoney.app/developers).
+LUNCHMONEY_API_TOKEN=
+
+# Google OAuth Web client (https://console.cloud.google.com/apis/credentials).
+# The redirect URI registered there must be your worker URL + /authorize/callback.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Comma-separated list of gmail addresses allowed to authorize.
+# Whitespace is trimmed; matching is case-insensitive.
+ALLOWED_EMAILS=you@example.com
+
+# Random secret used to HMAC-sign the OAuth `state` parameter.
+# Generate with:  openssl rand -hex 32
+STATE_SECRET=
