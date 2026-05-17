@@ -25,6 +25,15 @@
             "id": "REPLACE_WITH_YOUR_KV_ID"
         }
     ],
+    // Rate-limits POST /register per cf-connecting-ip. createOAuthWorker
+    // picks this binding up automatically when present.
+    "ratelimits": [
+        {
+            "name": "REGISTER_LIMITER",
+            "namespace_id": "1001",
+            "simple": { "limit": 10, "period": 60 }
+        }
+    ],
     "observability": {
         "enabled": true
     }
