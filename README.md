@@ -9,7 +9,17 @@ Deploy [LunchMoney's MCP server](https://github.com/akutishevsky/lunchmoney-mcp)
 - A [Google Cloud account](https://console.cloud.google.com/) (for sign-in)
 - Node 22 or newer
 
-## Setup
+## Quick start
+
+```sh
+git clone https://github.com/bm1549/lunchmoney-mcp-cloudflare.git
+cd lunchmoney-mcp-cloudflare
+./setup.sh
+```
+
+The wizard walks you through everything below — KV namespace, deploy, Google OAuth client, secrets, redeploy — and prints the final URL to paste into claude.ai. The manual steps are kept below as a reference / fallback.
+
+## Setup (manual)
 
 ### 1. Clone, install, log in to Cloudflare
 

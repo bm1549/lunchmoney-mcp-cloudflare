@@ -5,6 +5,7 @@
     "type": "module",
     "description": "Cloudflare Worker that exposes the LunchMoney MCP server (akutishevsky/lunchmoney-mcp) as a remote MCP endpoint with Google OAuth.",
     "scripts": {
+        "setup": "bash setup.sh",
         "dev": "wrangler dev",
         "deploy": "wrangler deploy",
         "typecheck": "tsc --noEmit",
