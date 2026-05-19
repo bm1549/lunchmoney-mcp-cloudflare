@@ -1,6 +1,6 @@
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { createOAuthWorker, type BaseEnv } from "remote-mcp-cloudflare";
+import { createOAuthWorker, type BaseEnv } from "@bm1549/remote-mcp-cloudflare";
 import { createServer } from "@akutishevsky/lunchmoney-mcp/server";
 import { initializeConfig } from "@akutishevsky/lunchmoney-mcp/config";
 import packageJson from "../package.json" with { type: "json" };
