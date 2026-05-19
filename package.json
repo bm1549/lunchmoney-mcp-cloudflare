@@ -13,13 +13,17 @@
     },
     "dependencies": {
         "@akutishevsky/lunchmoney-mcp": "^2.1.0",
+        "@bm1549/remote-mcp-cloudflare": "file:../remote-mcp-cloudflare",
         "@modelcontextprotocol/sdk": "^1.0.0",
-        "agents": "^0.12.3",
-        "@bm1549/remote-mcp-cloudflare": "^0.1.1"
+        "agents": "^0.12.3"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^4.20250404.0",
         "typescript": "^5.4.0",
         "wrangler": "^4.87.0"
+    },
+    "overrides": {
+        "agents": "$agents",
+        "@modelcontextprotocol/sdk": "$@modelcontextprotocol/sdk"
     }
 }
