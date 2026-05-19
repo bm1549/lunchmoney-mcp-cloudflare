@@ -12,7 +12,7 @@
         "cf-typegen": "wrangler types"
     },
     "dependencies": {
-        "@akutishevsky/lunchmoney-mcp": "git+https://github.com/bm1549/lunchmoney-mcp.git#template-deploy",
+        "@akutishevsky/lunchmoney-mcp": "^2.1.0",
         "@modelcontextprotocol/sdk": "^1.0.0",
         "agents": "^0.12.3",
         "remote-mcp-cloudflare": "git+https://github.com/bm1549/remote-mcp-cloudflare.git"
