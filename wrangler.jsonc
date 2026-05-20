@@ -20,18 +20,28 @@
     },
     "kv_namespaces": [
         {
+            // OAuth provider grant store (DCR registrations + issued tokens).
+            //   npx wrangler kv namespace create OAUTH_KV
             "binding": "OAUTH_KV",
-            // Run `wrangler kv namespace create OAUTH_KV` and paste the id here.
-            "id": "REPLACE_WITH_YOUR_KV_ID"
+            "id": "f2f7b138148f4324a71a50943e33841b"
+        },
+        {
+            // Per-user LunchMoney API tokens, keyed by Google `sub`.
+            // See src/storage.ts for the value shape.
+            //   npx wrangler kv namespace create USER_TOKENS
+            "binding": "USER_TOKENS",
+            "id": "b4e5a6cfd9754172a01e255f31a13611"
         }
     ],
-    // Rate-limits POST /register per cf-connecting-ip. createOAuthWorker
-    // picks this binding up automatically when present.
     "ratelimits": [
         {
+            // Per-IP rate limit on POST /register. Tightened from 10/min to
+            // 2/min for multi-tenant — see security review. A global daily
+            // cap is a follow-up (Cloudflare's `simple` limiter only supports
+            // period 10 or 60 seconds; a real daily cap needs a KV counter).
             "name": "REGISTER_LIMITER",
             "namespace_id": "1001",
-            "simple": { "limit": 10, "period": 60 }
+            "simple": { "limit": 2, "period": 60 }
         }
     ],
     "observability": {

@@ -4,7 +4,7 @@
 # Walks you through:
 #   1. Node version check + npm install
 #   2. Cloudflare login (if needed)
-#   3. KV namespace creation (OAUTH_KV_MT + USER_TOKENS_MT)
+#   3. KV namespace creation (OAUTH_KV + USER_TOKENS)
 #   4. First deploy (mints your workers.dev URL)
 #   5. Google OAuth client setup (manual — opens the browser)
 #   6. Setting all worker secrets
@@ -13,10 +13,9 @@
 # Re-running prompts for every secret again. Safe to re-run, but each run
 # overwrites the secrets.
 #
-# This wizard targets wrangler.mt.jsonc (the multi-tenant worker). In the
-# multi-tenant flow each end-user supplies their own LunchMoney token via
-# /setup after Google sign-in — there's no longer a single LUNCHMONEY_API_TOKEN
-# secret on the worker itself.
+# Each end-user supplies their own LunchMoney token via /setup after Google
+# sign-in — there's no longer a single LUNCHMONEY_API_TOKEN secret on the
+# worker itself.
 
 set -euo pipefail
 
@@ -27,7 +26,7 @@ YELLOW=$'\033[33m'
 RED=$'\033[31m'
 RESET=$'\033[0m'
 
-WRANGLER_CONFIG="wrangler.mt.jsonc"
+WRANGLER_CONFIG="wrangler.jsonc"
 
 step() {
     echo
@@ -105,8 +104,8 @@ fi
 step "KV namespaces"
 
 create_kv() {
-    # $1 = wrangler kv namespace name (e.g. OAUTH_KV_MT)
-    # $2 = placeholder string in $WRANGLER_CONFIG (e.g. REPLACE_WITH_OAUTH_KV_MT_ID)
+    # $1 = wrangler kv namespace name (e.g. OAUTH_KV)
+    # $2 = placeholder string in $WRANGLER_CONFIG (e.g. REPLACE_WITH_OAUTH_KV_ID)
     local name="$1"
     local placeholder="$2"
 
@@ -127,8 +126,8 @@ create_kv() {
     echo "Wrote $name id $new_id into $WRANGLER_CONFIG"
 }
 
-create_kv "OAUTH_KV_MT" "REPLACE_WITH_OAUTH_KV_MT_ID"
-create_kv "USER_TOKENS_MT" "REPLACE_WITH_USER_TOKENS_MT_ID"
+create_kv "OAUTH_KV" "REPLACE_WITH_OAUTH_KV_ID"
+create_kv "USER_TOKENS" "REPLACE_WITH_USER_TOKENS_ID"
 
 # -----------------------------------------------------------------------------
 

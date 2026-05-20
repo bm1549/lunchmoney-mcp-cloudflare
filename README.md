@@ -23,7 +23,7 @@ cd lunchmoney-mcp-cloudflare
 ./setup.sh
 ```
 
-The wizard walks you through everything below — KV namespaces, deploy, Google OAuth client, secrets, redeploy — and prints the final URL to paste into claude.ai. The wizard targets `wrangler.mt.jsonc` (the multi-tenant worker `lunchmoney-mcp-mt`).
+The wizard walks you through everything below — KV namespaces, deploy, Google OAuth client, secrets, redeploy — and prints the final URL to paste into claude.ai.
 
 ## Setup (manual)
 
@@ -39,19 +39,19 @@ npx wrangler login
 ### 2. Create the KV namespaces
 
 ```sh
-npx wrangler kv namespace create OAUTH_KV_MT
-npx wrangler kv namespace create USER_TOKENS_MT
+npx wrangler kv namespace create OAUTH_KV
+npx wrangler kv namespace create USER_TOKENS
 ```
 
-Open `wrangler.mt.jsonc` and paste the printed ids over `REPLACE_WITH_OAUTH_KV_MT_ID` and `REPLACE_WITH_USER_TOKENS_MT_ID` respectively.
+Open `wrangler.jsonc` and paste the printed ids over `REPLACE_WITH_OAUTH_KV_ID` and `REPLACE_WITH_USER_TOKENS_ID` respectively.
 
 ### 3. Deploy once to mint your URL
 
 ```sh
-npx wrangler deploy -c wrangler.mt.jsonc
+npx wrangler deploy
 ```
 
-The output prints a URL like `https://lunchmoney-mcp-mt.<your-subdomain>.workers.dev`. Copy it — you'll need it next.
+The output prints a URL like `https://lunchmoney-mcp.<your-subdomain>.workers.dev`. Copy it — you'll need it next.
 
 ### 4. Set up Google sign-in
 
@@ -61,17 +61,17 @@ At [Google Cloud → APIs & Services → Credentials](https://console.cloud.goog
 2. Create credentials → **OAuth client ID** → **Web application**.
 3. Add an **Authorized redirect URI**:
    ```
-   https://lunchmoney-mcp-mt.<your-subdomain>.workers.dev/authorize/callback
+   https://lunchmoney-mcp.<your-subdomain>.workers.dev/authorize/callback
    ```
 4. Copy the **Client ID** and **Client Secret**.
 
 ### 5. Set the worker secrets
 
 ```sh
-echo -n "<google-client-id>"      | npx wrangler secret put -c wrangler.mt.jsonc GOOGLE_CLIENT_ID
-echo -n "<google-client-secret>"  | npx wrangler secret put -c wrangler.mt.jsonc GOOGLE_CLIENT_SECRET
-echo -n "you@gmail.com"           | npx wrangler secret put -c wrangler.mt.jsonc ALLOWED_EMAILS
-openssl rand -hex 32              | npx wrangler secret put -c wrangler.mt.jsonc STATE_SECRET
+echo -n "<google-client-id>"      | npx wrangler secret put GOOGLE_CLIENT_ID
+echo -n "<google-client-secret>"  | npx wrangler secret put GOOGLE_CLIENT_SECRET
+echo -n "you@gmail.com"           | npx wrangler secret put ALLOWED_EMAILS
+openssl rand -hex 32              | npx wrangler secret put STATE_SECRET
 ```
 
 `ALLOWED_EMAILS` is **optional** and serves as a beta gate. Leave it unset (or set it to an empty string) to allow any Google account with a verified email. Set it to a comma-separated list to restrict access.
@@ -79,7 +79,7 @@ openssl rand -hex 32              | npx wrangler secret put -c wrangler.mt.jsonc
 ### 6. Redeploy
 
 ```sh
-npx wrangler deploy -c wrangler.mt.jsonc
+npx wrangler deploy
 ```
 
 ### 7. Connect from Claude
@@ -87,7 +87,7 @@ npx wrangler deploy -c wrangler.mt.jsonc
 In [claude.ai](https://claude.ai) → **Settings → Connectors → Add custom connector**:
 
 ```
-https://lunchmoney-mcp-mt.<your-subdomain>.workers.dev/mcp
+https://lunchmoney-mcp.<your-subdomain>.workers.dev/mcp
 ```
 
 The first time you connect:
@@ -105,7 +105,7 @@ This release does not yet expose a self-serve UI for rotating or deleting a stor
 
 ```sh
 # `sub` is the Google subject id printed in worker logs at sign-in time.
-npx wrangler kv key delete --binding USER_TOKENS -c wrangler.mt.jsonc "user:<sub>"
+npx wrangler kv key delete --binding USER_TOKENS "user:<sub>"
 ```
 
 The user will then be sent back through `/setup` on their next connect. A `/settings` page for self-serve rotation is a planned follow-up.
@@ -115,7 +115,7 @@ The user will then be sent back through `/setup` on their next connect. A `/sett
 - **Google warns "App is being tested"** — normal in Testing mode. Continue.
 - **`Forbidden: <email> is not authorized`** after Google sign-in — that address isn't in `ALLOWED_EMAILS`. Either add them to the allowlist or unset it for open signup.
 - **`Setup link expired`** at `/setup` — the resume token is good for 30 minutes. Re-launch the connect flow from Claude.
-- **Anything else** — `npx wrangler tail -c wrangler.mt.jsonc` streams live logs from the deployed worker.
+- **Anything else** — `npx wrangler tail` streams live logs from the deployed worker.
 
 ## License
 
