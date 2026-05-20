@@ -76,7 +76,13 @@ function readCookie(request: Request, name: string): string | null {
 }
 
 function sessionCookie(value: string, maxAge: number): string {
-    return `${SESSION_COOKIE}=${value}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${maxAge}`;
+    // SameSite=Lax (not Strict): /setup is reached via a 302 chain originating
+    // at accounts.google.com, and some browsers refuse to send Strict cookies
+    // on POSTs from a navigation with cross-site lineage. Lax still blocks
+    // CSRF (POSTs from third-party origins) while allowing the same-origin
+    // form submission to carry the cookie. CSRF is also defense-in-depth'd
+    // by the HMAC-signed `csrf` field bound to `sub`.
+    return `${SESSION_COOKIE}=${value}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
 }
 
 function renderForm(opts: {
@@ -240,9 +246,12 @@ async function handlePost(
         { sub: session.sub, email: session.email },
     );
 
-    const headers = new Headers({ location: redirectTo });
-    headers.append("set-cookie", sessionCookie("", 0));
-    return new Response(null, { status: 302, headers });
+    // Don't clear the session cookie. Let it expire naturally (15 min).
+    // Clearing it makes any user-initiated retry (back button, double-click
+    // after a slow response) fail with "Missing session" because the second
+    // POST arrives with no cookie. putUserToken is idempotent, so a duplicate
+    // submit just re-runs harmlessly.
+    return new Response(null, { status: 302, headers: { location: redirectTo } });
 }
 
 export async function setupHandler(
