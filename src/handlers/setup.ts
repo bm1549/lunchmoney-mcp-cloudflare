@@ -283,12 +283,42 @@ async function handlePost(
         { sub: session.sub, email: session.email },
     );
 
-    // Don't clear the session cookie. Let it expire naturally (15 min).
-    // Clearing it makes any user-initiated retry (back button, double-click
-    // after a slow response) fail with "Missing session" because the second
-    // POST arrives with no cookie. putUserToken is idempotent, so a duplicate
-    // submit just re-runs harmlessly.
-    return new Response(null, { status: 302, headers: { location: redirectTo } });
+    if (!redirectTo) {
+        return new Response(
+            `Internal: empty redirectTo from completeAuthorization`,
+            { status: 500 },
+        );
+    }
+
+    // Render an interstitial HTML page that does a client-side redirect.
+    //
+    // We can't use a 302 here: some mobile WebViews (notably Claude's iOS
+    // in-app browser) don't follow POST-response redirects to whitelisted
+    // OAuth callback URLs. Returning HTML with a JS redirect + meta refresh
+    // fallback + visible link works universally — the WebView gets a GET
+    // navigation event, which is what its URL-pattern interceptor expects.
+    const nonce = newNonce();
+    const safe = htmlEscape(redirectTo);
+    const body = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Connecting…</title>
+<meta http-equiv="refresh" content="0; url=${safe}">
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; max-width: 420px; margin: 4em auto; padding: 0 1em; text-align: center; color: #222; }
+  a { color: #06c; word-break: break-all; }
+</style>
+</head>
+<body>
+<p>Token saved. Returning you to Claude…</p>
+<p>If you aren't redirected automatically, <a href="${safe}">tap here</a>.</p>
+<script nonce="${htmlEscape(nonce)}">
+  window.location.replace(${JSON.stringify(redirectTo)});
+</script>
+</body>
+</html>`;
+    return new Response(body, { status: 200, headers: htmlHeaders(nonce) });
 }
 
 export async function setupHandler(
