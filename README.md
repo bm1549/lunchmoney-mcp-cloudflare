@@ -1,13 +1,19 @@
 # lunchmoney-mcp-cloudflare
 
-Deploy [LunchMoney's MCP server](https://github.com/akutishevsky/lunchmoney-mcp) to Cloudflare so Claude (desktop or mobile) can use it as a custom connector. Sign-in is gated by Google + an email allowlist, so the worker stays private to you.
+Deploy [LunchMoney's MCP server](https://github.com/akutishevsky/lunchmoney-mcp) to Cloudflare so Claude (desktop or mobile) can use it as a custom connector. Sign-in is gated by Google, with an optional Gmail allowlist for beta deployments. Each end-user supplies their own LunchMoney API token on first connect — the operator deploying the worker does not need a LunchMoney token.
 
 ## What you'll need
 
+**As the operator** (the person deploying):
+
 - A free [Cloudflare account](https://dash.cloudflare.com/sign-up)
-- A [LunchMoney API token](https://my.lunchmoney.app/developers)
-- A [Google Cloud account](https://console.cloud.google.com/) (for sign-in)
+- A [Google Cloud account](https://console.cloud.google.com/) (to create the OAuth client all end-users authenticate against)
 - Node 22 or newer
+
+**As an end-user connecting from Claude:**
+
+- A Google account (one of the allowlisted Gmail addresses, if the operator configured an allowlist)
+- A [LunchMoney API token](https://my.lunchmoney.app/developers) — you'll paste this once at the `/setup` page on first connect
 
 ## Quick start
 
@@ -17,7 +23,7 @@ cd lunchmoney-mcp-cloudflare
 ./setup.sh
 ```
 
-The wizard walks you through everything below — KV namespace, deploy, Google OAuth client, secrets, redeploy — and prints the final URL to paste into claude.ai. The manual steps are kept below as a reference / fallback.
+The wizard walks you through everything below — KV namespaces, deploy, Google OAuth client, secrets, redeploy — and prints the final URL to paste into claude.ai.
 
 ## Setup (manual)
 
@@ -30,15 +36,14 @@ npm install
 npx wrangler login
 ```
 
-`wrangler login` opens a browser to authorize wrangler with your Cloudflare account.
-
-### 2. Create a KV namespace
+### 2. Create the KV namespaces
 
 ```sh
 npx wrangler kv namespace create OAUTH_KV
+npx wrangler kv namespace create USER_TOKENS
 ```
 
-Open `wrangler.jsonc` and paste the printed `id` over `REPLACE_WITH_YOUR_KV_ID`.
+Open `wrangler.jsonc` and paste the printed ids over `REPLACE_WITH_OAUTH_KV_ID` and `REPLACE_WITH_USER_TOKENS_ID` respectively.
 
 ### 3. Deploy once to mint your URL
 
@@ -52,7 +57,7 @@ The output prints a URL like `https://lunchmoney-mcp.<your-subdomain>.workers.de
 
 At [Google Cloud → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials):
 
-1. Configure the **OAuth consent screen** → **External** + **Testing**. Add your Gmail address as a test user.
+1. Configure the **OAuth consent screen** → **External** + **Testing**. Add the Gmail addresses you want to allow as test users.
 2. Create credentials → **OAuth client ID** → **Web application**.
 3. Add an **Authorized redirect URI**:
    ```
@@ -63,14 +68,13 @@ At [Google Cloud → APIs & Services → Credentials](https://console.cloud.goog
 ### 5. Set the worker secrets
 
 ```sh
-echo -n "<lunchmoney-api-token>"  | npx wrangler secret put LUNCHMONEY_API_TOKEN
 echo -n "<google-client-id>"      | npx wrangler secret put GOOGLE_CLIENT_ID
 echo -n "<google-client-secret>"  | npx wrangler secret put GOOGLE_CLIENT_SECRET
 echo -n "you@gmail.com"           | npx wrangler secret put ALLOWED_EMAILS
 openssl rand -hex 32              | npx wrangler secret put STATE_SECRET
 ```
 
-`ALLOWED_EMAILS` is comma-separated — only addresses on this list can complete sign-in.
+`ALLOWED_EMAILS` is **optional** and serves as a beta gate. Leave it unset (or set it to an empty string) to allow any Google account with a verified email. Set it to a comma-separated list to restrict access.
 
 ### 6. Redeploy
 
@@ -80,18 +84,37 @@ npx wrangler deploy
 
 ### 7. Connect from Claude
 
-In [claude.ai](https://claude.ai) → **Settings → Connectors → Add custom connector**.
+In [claude.ai](https://claude.ai) → **Settings → Connectors → Add custom connector**:
 
 ```
 https://lunchmoney-mcp.<your-subdomain>.workers.dev/mcp
 ```
 
-You'll be bounced through Google sign-in. Pick the allowlisted account, and all 41 LunchMoney tools show up in Claude.
+The first time you connect:
+
+1. You'll be bounced through Google sign-in.
+2. After sign-in you'll land on a `/setup` page asking for your LunchMoney API token.
+3. Paste a token from [my.lunchmoney.app/developers](https://my.lunchmoney.app/developers) and submit.
+4. You'll be returned to Claude with all LunchMoney tools registered.
+
+On subsequent connects you'll skip step 2 — the stored token is reused.
+
+## Token rotation (v1 limitation)
+
+This release does not yet expose a self-serve UI for rotating or deleting a stored token. To rotate, the operator deletes the user's KV row:
+
+```sh
+# `sub` is the Google subject id printed in worker logs at sign-in time.
+npx wrangler kv key delete --binding USER_TOKENS "user:<sub>"
+```
+
+The user will then be sent back through `/setup` on their next connect. A `/settings` page for self-serve rotation is a planned follow-up.
 
 ## Troubleshooting
 
 - **Google warns "App is being tested"** — normal in Testing mode. Continue.
-- **`Forbidden: <email> is not authorized`** after Google sign-in — that address isn't in `ALLOWED_EMAILS`. Re-run the `secret put ALLOWED_EMAILS` step with the right list.
+- **`Forbidden: <email> is not authorized`** after Google sign-in — that address isn't in `ALLOWED_EMAILS`. Either add them to the allowlist or unset it for open signup.
+- **`Setup link expired`** at `/setup` — the resume token is good for 30 minutes. Re-launch the connect flow from Claude.
 - **Anything else** — `npx wrangler tail` streams live logs from the deployed worker.
 
 ## License
