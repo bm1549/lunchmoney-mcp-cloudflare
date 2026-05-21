@@ -1,6 +1,6 @@
 {
     "name": "lunchmoney-mcp-cloudflare",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "private": true,
     "type": "module",
     "description": "Cloudflare Worker that exposes the LunchMoney MCP server (akutishevsky/lunchmoney-mcp) as a remote MCP endpoint with Google OAuth.",
@@ -13,7 +13,7 @@
     },
     "dependencies": {
         "@akutishevsky/lunchmoney-mcp": "^2.1.0",
-        "@bm1549/remote-mcp-cloudflare": "file:../remote-mcp-cloudflare",
+        "@bm1549/remote-mcp-cloudflare": "^0.2.0",
         "@modelcontextprotocol/sdk": "^1.0.0",
         "agents": "^0.12.3"
     },
