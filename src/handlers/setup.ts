@@ -33,8 +33,17 @@ interface SetupEnv extends AppEnv {
 const SESSION_COOKIE = "lm_session";
 const SESSION_MAX_AGE = 15 * 60;
 
-const CSP =
-    "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none';";
+function cspWithNonce(nonce: string): string {
+    return `default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; form-action 'self'; base-uri 'none'; frame-ancestors 'none';`;
+}
+
+function newNonce(): string {
+    const buf = new Uint8Array(16);
+    crypto.getRandomValues(buf);
+    let s = "";
+    for (const b of buf) s += b.toString(16).padStart(2, "0");
+    return s;
+}
 
 function htmlEscape(s: string): string {
     return s.replace(/[&<>"']/g, (c) => {
@@ -55,10 +64,10 @@ function htmlEscape(s: string): string {
     });
 }
 
-function htmlHeaders(): HeadersInit {
+function htmlHeaders(nonce: string): HeadersInit {
     return {
         "content-type": "text/html; charset=utf-8",
-        "content-security-policy": CSP,
+        "content-security-policy": cspWithNonce(nonce),
         "x-content-type-options": "nosniff",
         "referrer-policy": "no-referrer",
         "cache-control": "no-store",
@@ -89,6 +98,7 @@ function renderForm(opts: {
     email: string;
     csrfToken: string;
     rt: string;
+    nonce: string;
     error?: string;
 }): string {
     const errorBlock = opts.error
@@ -106,10 +116,15 @@ function renderForm(opts: {
   p { line-height: 1.5; }
   label { display: block; font-weight: 600; margin-top: 1em; }
   input[type=password] { width: 100%; padding: 0.6em; font-size: 1em; box-sizing: border-box; }
-  button { margin-top: 1.2em; padding: 0.7em 1.4em; font-size: 1em; cursor: pointer; }
+  button { margin-top: 1.2em; padding: 0.7em 1.4em; font-size: 1em; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5em; }
+  button[disabled] { cursor: progress; opacity: 0.75; }
   .meta { color: #666; font-size: 0.9em; }
   .error { background: #fee; border: 1px solid #c00; color: #900; padding: 0.7em 1em; border-radius: 4px; margin-top: 1em; }
+  .hint { color: #666; font-size: 0.85em; margin-top: 0.6em; }
   a { color: #06c; }
+  .spinner { width: 0.9em; height: 0.9em; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; display: none; animation: spin 0.7s linear infinite; }
+  button[disabled] .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -117,13 +132,29 @@ function renderForm(opts: {
 <p>To finish setting up the LunchMoney connector for Claude, paste your LunchMoney API token below. It's stored encrypted-at-rest in Cloudflare KV and only used to call LunchMoney on your behalf.</p>
 <p class="meta">Signed in as <strong>${htmlEscape(opts.email)}</strong>. Get a token at <a href="https://my.lunchmoney.app/developers">my.lunchmoney.app/developers</a>.</p>
 ${errorBlock}
-<form method="POST" action="/setup">
+<form method="POST" action="/setup" id="setup-form">
   <label for="token">LunchMoney API token</label>
-  <input id="token" name="token" type="password" autocomplete="off" required>
+  <input id="token" name="token" type="password" autocomplete="off" required minlength="20" spellcheck="false">
   <input type="hidden" name="csrf" value="${htmlEscape(opts.csrfToken)}">
   <input type="hidden" name="rt" value="${htmlEscape(opts.rt)}">
-  <button type="submit">Save and continue</button>
+  <button type="submit" id="submit-btn">
+    <span class="spinner" aria-hidden="true"></span>
+    <span class="label">Save and continue</span>
+  </button>
+  <p class="hint">Validation hits the LunchMoney API and can take a few seconds.</p>
 </form>
+<script nonce="${htmlEscape(opts.nonce)}">
+  (function () {
+    var form = document.getElementById('setup-form');
+    var btn = document.getElementById('submit-btn');
+    var label = btn.querySelector('.label');
+    form.addEventListener('submit', function () {
+      if (btn.disabled) return;
+      btn.disabled = true;
+      label.textContent = 'Validating…';
+    });
+  })();
+</script>
 </body>
 </html>`;
 }
@@ -148,12 +179,14 @@ async function handleGet(
         email: payload.email,
     });
     const csrfToken = await signCsrf(env.STATE_SECRET, payload.sub);
+    const nonce = newNonce();
     const body = renderForm({
         email: payload.email,
         csrfToken,
         rt,
+        nonce,
     });
-    const headers = new Headers(htmlHeaders());
+    const headers = new Headers(htmlHeaders(nonce));
     headers.append("set-cookie", sessionCookie(session, SESSION_MAX_AGE));
     return new Response(body, { status: 200, headers });
 }
@@ -199,28 +232,32 @@ async function handlePost(
     const trimmed = token.trim();
     if (!trimmed) {
         const csrfToken = await signCsrf(env.STATE_SECRET, session.sub);
+        const nonce = newNonce();
         return new Response(
             renderForm({
                 email: session.email,
                 csrfToken,
                 rt,
+                nonce,
                 error: "Token cannot be empty.",
             }),
-            { status: 200, headers: htmlHeaders() },
+            { status: 200, headers: htmlHeaders(nonce) },
         );
     }
 
     const result = await validateLunchMoneyToken(trimmed);
     if (!result.ok) {
         const csrfToken = await signCsrf(env.STATE_SECRET, session.sub);
+        const nonce = newNonce();
         return new Response(
             renderForm({
                 email: session.email,
                 csrfToken,
                 rt,
+                nonce,
                 error: result.message,
             }),
-            { status: 200, headers: htmlHeaders() },
+            { status: 200, headers: htmlHeaders(nonce) },
         );
     }
 
