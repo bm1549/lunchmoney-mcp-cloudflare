@@ -11,6 +11,9 @@ describe("htmlEscape", () => {
         expect(htmlEscape("hello world")).toBe("hello world"));
     it("escapes multiple special chars", () =>
         expect(htmlEscape(`<b>"a"&'b'</b>`)).toBe("&lt;b&gt;&quot;a&quot;&amp;&#39;b&#39;&lt;/b&gt;"));
+    it("returns empty string unchanged", () => expect(htmlEscape("")).toBe(""));
+    it("handles a string of only special chars", () =>
+        expect(htmlEscape("&&&")).toBe("&amp;&amp;&amp;"));
 });
 
 describe("readCookie", () => {
@@ -30,6 +33,10 @@ describe("readCookie", () => {
         expect(readCookie(req("a=1; lm_session=tok; b=2"), "lm_session")).toBe("tok"));
     it("handles cookie values that contain =", () =>
         expect(readCookie(req("lm_session=a=b=c"), "lm_session")).toBe("a=b=c"));
+    it("returns null when the cookie header is empty string", () =>
+        expect(readCookie(req(""), "lm_session")).toBeNull());
+    it("returns null when cookie key has leading whitespace (strict match)", () =>
+        expect(readCookie(req("lm_session =abc123"), "lm_session")).toBeNull());
 });
 
 describe("cspWithNonce", () => {
@@ -37,4 +44,8 @@ describe("cspWithNonce", () => {
         expect(cspWithNonce("abc123")).toContain("'nonce-abc123'"));
     it("includes default-src 'none'", () =>
         expect(cspWithNonce("x")).toContain("default-src 'none'"));
+    it("returns the full policy string", () =>
+        expect(cspWithNonce("n")).toBe(
+            "default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-n'; form-action 'self'; base-uri 'none'; frame-ancestors 'none';"
+        ));
 });
