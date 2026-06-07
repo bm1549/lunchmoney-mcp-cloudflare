@@ -16,7 +16,7 @@ import { setupHandler } from "./handlers/setup.js";
 
 interface WorkerEnv extends BaseEnv {
     USER_TOKENS: KVNamespace;
-    REGISTER_GLOBAL_LIMITER?: RateLimit;
+    REGISTER_LIMITER: RateLimit;
 }
 
 interface UserProps extends Record<string, unknown> {

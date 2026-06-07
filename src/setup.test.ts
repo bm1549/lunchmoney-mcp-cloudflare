@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { htmlEscape, readCookie, cspWithNonce } from "./handlers/setup.js";
+import { htmlEscape, readCookie, cspWithNonce } from "./utils.js";
 
 describe("htmlEscape", () => {
     it("escapes &", () => expect(htmlEscape("a&b")).toBe("a&amp;b"));
@@ -37,6 +37,8 @@ describe("readCookie", () => {
         expect(readCookie(req(""), "lm_session")).toBeNull());
     it("returns null when cookie key has leading whitespace (strict match)", () =>
         expect(readCookie(req("lm_session =abc123"), "lm_session")).toBeNull());
+    it("returns null for a cookie entry with no '=' separator", () =>
+        expect(readCookie(req("; lm_session"), "lm_session")).toBeNull());
 });
 
 describe("cspWithNonce", () => {

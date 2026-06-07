@@ -23,6 +23,15 @@ interface CsrfPayload {
     kind: "csrf";
 }
 
+// Used only in verifyCsrf for deserialization — kind is a plain string until the
+// runtime check on the following line confirms it is "csrf".  A separate type is
+// needed because verifyHmac<CsrfPayload> would make payload.kind a "csrf" literal,
+// causing TypeScript to flag `payload.kind !== "csrf"` as an impossible condition.
+interface UnverifiedCsrfPayload {
+    sub: string;
+    kind: string;
+}
+
 export async function signSession(
     secret: string,
     payload: SessionPayload,
@@ -55,7 +64,7 @@ export async function verifyCsrf(
     token: string,
     sub: string,
 ): Promise<boolean> {
-    const payload = await verifyHmac<{ sub: string; kind: string }>(secret, token);
+    const payload = await verifyHmac<UnverifiedCsrfPayload>(secret, token);
     if (!payload || payload.kind !== "csrf") return false;
     return payload.sub === sub;
 }

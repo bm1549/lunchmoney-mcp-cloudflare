@@ -17,6 +17,7 @@ import {
 import { putUserToken } from "../storage.js";
 import { validateLunchMoneyToken } from "../validate.js";
 import { signSession, verifySession, signCsrf, verifyCsrf } from "../crypto.js";
+import { cspWithNonce, htmlEscape, readCookie } from "../utils.js";
 
 interface ResumePayload {
     oauthReqInfo: unknown;
@@ -33,35 +34,12 @@ interface SetupEnv extends AppEnv {
 const SESSION_COOKIE = "lm_session";
 const SESSION_MAX_AGE = 15 * 60;
 
-export function cspWithNonce(nonce: string): string {
-    return `default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; form-action 'self'; base-uri 'none'; frame-ancestors 'none';`;
-}
-
 function newNonce(): string {
     const buf = new Uint8Array(16);
     crypto.getRandomValues(buf);
     let s = "";
     for (const b of buf) s += b.toString(16).padStart(2, "0");
     return s;
-}
-
-export function htmlEscape(s: string): string {
-    return s.replace(/[&<>"']/g, (c) => {
-        switch (c) {
-            case "&":
-                return "&amp;";
-            case "<":
-                return "&lt;";
-            case ">":
-                return "&gt;";
-            case '"':
-                return "&quot;";
-            case "'":
-                return "&#39;";
-            default:
-                return c;
-        }
-    });
 }
 
 function htmlHeaders(nonce: string): HeadersInit {
@@ -72,16 +50,6 @@ function htmlHeaders(nonce: string): HeadersInit {
         "referrer-policy": "no-referrer",
         "cache-control": "no-store",
     };
-}
-
-export function readCookie(request: Request, name: string): string | null {
-    const header = request.headers.get("cookie");
-    if (!header) return null;
-    for (const part of header.split(";")) {
-        const [k, ...rest] = part.trim().split("=");
-        if (k === name) return rest.join("=");
-    }
-    return null;
 }
 
 function sessionCookie(value: string, maxAge: number): string {
