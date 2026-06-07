@@ -33,7 +33,7 @@ interface SetupEnv extends AppEnv {
 const SESSION_COOKIE = "lm_session";
 const SESSION_MAX_AGE = 15 * 60;
 
-function cspWithNonce(nonce: string): string {
+export function cspWithNonce(nonce: string): string {
     return `default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; form-action 'self'; base-uri 'none'; frame-ancestors 'none';`;
 }
 
@@ -45,7 +45,7 @@ function newNonce(): string {
     return s;
 }
 
-function htmlEscape(s: string): string {
+export function htmlEscape(s: string): string {
     return s.replace(/[&<>"']/g, (c) => {
         switch (c) {
             case "&":
@@ -74,7 +74,7 @@ function htmlHeaders(nonce: string): HeadersInit {
     };
 }
 
-function readCookie(request: Request, name: string): string | null {
+export function readCookie(request: Request, name: string): string | null {
     const header = request.headers.get("cookie");
     if (!header) return null;
     for (const part of header.split(";")) {
