@@ -9,7 +9,8 @@
         "dev": "wrangler dev",
         "deploy": "wrangler deploy",
         "typecheck": "tsc --noEmit",
-        "cf-typegen": "wrangler types"
+        "cf-typegen": "wrangler types",
+        "test": "vitest run --passWithNoTests"
     },
     "dependencies": {
         "@akutishevsky/lunchmoney-mcp": "^2.1.0",
@@ -18,8 +19,10 @@
         "agents": "^0.12.3"
     },
     "devDependencies": {
+        "@cloudflare/vitest-pool-workers": "^0.16.13",
         "@cloudflare/workers-types": "^4.20250404.0",
         "typescript": "^5.4.0",
+        "vitest": "^4.1.8",
         "wrangler": "^4.87.0"
     },
     "overrides": {
