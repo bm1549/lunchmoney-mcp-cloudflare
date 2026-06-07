@@ -55,7 +55,7 @@ export async function verifyCsrf(
     token: string,
     sub: string,
 ): Promise<boolean> {
-    const payload = await verifyHmac<CsrfPayload>(secret, token);
+    const payload = await verifyHmac<{ sub: string; kind: string }>(secret, token);
     if (!payload || payload.kind !== "csrf") return false;
     return payload.sub === sub;
 }

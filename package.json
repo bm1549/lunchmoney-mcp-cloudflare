@@ -9,6 +9,7 @@
         "dev": "wrangler dev",
         "deploy": "wrangler deploy",
         "typecheck": "tsc --noEmit",
+        "lint": "eslint src",
         "cf-typegen": "wrangler types",
         "test": "vitest run --passWithNoTests"
     },
@@ -21,7 +22,10 @@
     "devDependencies": {
         "@cloudflare/vitest-pool-workers": "^0.16.13",
         "@cloudflare/workers-types": "^4.20250404.0",
+        "@eslint/js": "^10.0.1",
+        "eslint": "^10.4.1",
         "typescript": "^5.4.0",
+        "typescript-eslint": "^8.60.1",
         "vitest": "^4.1.8",
         "wrangler": "^4.87.0"
     },

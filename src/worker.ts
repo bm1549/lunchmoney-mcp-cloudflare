@@ -61,7 +61,7 @@ export default createOAuthWorker(LunchMoneyMCP, {
         const sub = userinfo.sub;
 
         // Optional beta allowlist. Empty / unset => open signup.
-        const allowedRaw = (env.ALLOWED_EMAILS ?? "").trim();
+        const allowedRaw = ((env.ALLOWED_EMAILS as string | undefined) ?? "").trim();
         if (allowedRaw) {
             const allowed = allowedRaw
                 .split(",")
