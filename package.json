@@ -14,20 +14,20 @@
         "test": "vitest run --passWithNoTests"
     },
     "dependencies": {
-        "@akutishevsky/lunchmoney-mcp": "^2.1.0",
+        "@akutishevsky/lunchmoney-mcp": "^2.1.1",
         "@bm1549/remote-mcp-cloudflare": "^0.2.0",
         "@modelcontextprotocol/sdk": "^1.0.0",
-        "agents": "^0.12.3"
+        "agents": "^0.14.4"
     },
     "devDependencies": {
         "@cloudflare/vitest-pool-workers": "^0.16.13",
-        "@cloudflare/workers-types": "^4.20250404.0",
+        "@cloudflare/workers-types": "^4.20260607.1",
         "@eslint/js": "^10.0.1",
         "eslint": "^10.4.1",
         "typescript": "^5.4.0",
         "typescript-eslint": "^8.60.1",
         "vitest": "^4.1.8",
-        "wrangler": "^4.87.0"
+        "wrangler": "^4.98.0"
     },
     "overrides": {
         "agents": "$agents",
