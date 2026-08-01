@@ -24,6 +24,10 @@ interface UserProps extends Record<string, unknown> {
     email: string;
 }
 
+// McpAgent is deprecated in favor of createMcpHandler, but createOAuthWorker
+// (from @bm1549/remote-mcp-cloudflare) is built around the McpAgent Durable
+// Object contract. Migrating requires an upstream change to that package.
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class LunchMoneyMCP extends McpAgent<WorkerEnv, unknown, UserProps> {
     server!: McpServer;
 

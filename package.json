@@ -17,16 +17,16 @@
         "@akutishevsky/lunchmoney-mcp": "^2.1.1",
         "@bm1549/remote-mcp-cloudflare": "^0.2.0",
         "@modelcontextprotocol/sdk": "^1.0.0",
-        "agents": "^0.14.4"
+        "agents": "^0.20.1"
     },
     "devDependencies": {
-        "@cloudflare/vitest-pool-workers": "^0.16.13",
+        "@cloudflare/vitest-pool-workers": "^0.19.0",
         "@cloudflare/workers-types": "^5.20260801.1",
         "@eslint/js": "^10.0.1",
         "eslint": "^10.8.0",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.60.1",
-        "vitest": "^4.1.8",
+        "typescript-eslint": "^8.65.0",
+        "vitest": "^4.1.10",
         "wrangler": "^4.98.0"
     },
     "overrides": {
