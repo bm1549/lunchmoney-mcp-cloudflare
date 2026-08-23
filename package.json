@@ -17,7 +17,7 @@
         "@akutishevsky/lunchmoney-mcp": "github:bm1549/lunchmoney-mcp#df910c7e6fd616eb55ba57c7d1e115e0f927ed64",
         "@bm1549/remote-mcp-cloudflare": "0.3.0",
         "@modelcontextprotocol/server": "2.0.0",
-        "agents": "0.20.1",
+        "agents": "0.21.0",
         "zod": "^4.2.0"
     },
     "devDependencies": {
