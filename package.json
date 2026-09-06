@@ -18,7 +18,7 @@
         "@bm1549/remote-mcp-cloudflare": "0.3.0",
         "@modelcontextprotocol/server": "2.0.0",
         "agents": "0.22.0",
-        "zod": "^4.2.0"
+        "zod": "^4.5.4"
     },
     "devDependencies": {
         "@cloudflare/vitest-pool-workers": "0.22.0",
