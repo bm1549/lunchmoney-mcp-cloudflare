@@ -28,7 +28,7 @@
         "typescript": "6.0.3",
         "typescript-eslint": "8.72.2",
         "vitest": "4.1.11",
-        "wrangler": "4.155.0"
+        "wrangler": "4.160.1"
     },
     "overrides": {
         "agents": "$agents",
